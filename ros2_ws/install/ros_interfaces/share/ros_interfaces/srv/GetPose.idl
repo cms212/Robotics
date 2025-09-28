@@ -1,0 +1,16 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from ros_interfaces/srv/GetPose.srv
+// generated code does not contain a copyright notice
+
+#include "geometry_msgs/msg/Pose.idl"
+
+module ros_interfaces {
+  module srv {
+    struct GetPose_Request {
+      uint8 structure_needs_at_least_one_member;
+    };
+    struct GetPose_Response {
+      geometry_msgs::msg::Pose pose;
+    };
+  };
+};
