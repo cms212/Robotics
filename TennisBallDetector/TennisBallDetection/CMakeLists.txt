@@ -7,10 +7,13 @@ find_package(OpenCV REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 # Add ONNX Runtime
-find_library(ONNXRUNTIME_LIB onnxruntime HINTS /usr/local/lib)
+set(ONNXRUNTIME_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime-linux-x64-1.16.3)
+set(ONNXRUNTIME_INCLUDE_DIRS ${ONNXRUNTIME_ROOT_PATH}/include)
+set(ONNXRUNTIME_LIB_DIRS ${ONNXRUNTIME_ROOT_PATH}/lib)
+find_library(ONNXRUNTIME_LIB onnxruntime HINTS ${ONNXRUNTIME_LIB_DIRS})
 
 include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(/usr/local/include)
+include_directories(${ONNXRUNTIME_INCLUDE_DIRS})
 
 add_executable(Tennis_Ball_Detection main.cpp)
 add_executable(egg_segmentation EggSegmentationMain.cpp)
