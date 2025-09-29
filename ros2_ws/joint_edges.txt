@@ -1,0 +1,7 @@
+        Max     Min
+
+Joint1: rotates around not min or max
+Joint2: 2667    1372
+Joint3: 3118    703
+Joint4: 3557    712
+Joint5: 3216    3632
