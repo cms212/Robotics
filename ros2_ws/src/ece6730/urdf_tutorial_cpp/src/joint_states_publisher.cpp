@@ -90,7 +90,7 @@ public:
             RCLCPP_ERROR(this->get_logger(), "%s", packetHandler->getRxPacketError(dxl_error));
           }
 
-          joint_states.position.push_back(present_position);
+          joint_states.position.push_back(present_position  * (2 * M_PI / 4095));  // Convert to radians
         
         /*RCLCPP_INFO(
             this->get_logger(),

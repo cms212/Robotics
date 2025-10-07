@@ -31,11 +31,11 @@ def generate_launch_description():
             }]
         ),
         
-        # Your custom Joint States Publisher - publishes joint states
+        # Joint State Publisher GUI - allows manual control of joints
         Node(
-            package='urdf_tutorial_cpp',
-            executable='joint_states_publisher',
-            name='joint_states_publisher',
+            package='joint_state_publisher_gui',
+            executable='joint_state_publisher_gui',
+            name='joint_state_publisher_gui',
             output='screen',
             parameters=[{'use_sim_time': use_sim_time}]
         ),
