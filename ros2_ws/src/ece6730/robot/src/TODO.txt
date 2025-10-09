@@ -1,0 +1,3 @@
+-Using the bounding box from the detection compute the xyz relative to the 
+ camera center 
+-Publish xyz to tf tree and find distance relative to the camera

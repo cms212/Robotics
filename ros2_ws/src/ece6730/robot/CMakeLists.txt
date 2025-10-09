@@ -22,6 +22,15 @@ find_package(sensor_msgs REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(dynamixel_sdk_custom_interfaces REQUIRED)
 find_package(message_interfaces REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(PkgConfig REQUIRED)
+
+# Add ONNX Runtime
+set(ONNXRUNTIME_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime-linux-x64-1.16.3)
+set(ONNXRUNTIME_INCLUDE_DIRS ${ONNXRUNTIME_ROOT_PATH}/include)
+set(ONNXRUNTIME_LIB_DIRS ${ONNXRUNTIME_ROOT_PATH}/lib)
+find_library(ONNXRUNTIME_LIB onnxruntime HINTS ${ONNXRUNTIME_LIB_DIRS})
+
 
 add_executable(executive src/executive.cpp)
 ament_target_dependencies(executive rclcpp behaviortree_cpp behaviortree_ros2 nav2_msgs  nav_msgs ros_interfaces tf2 tf2_ros tf2_geometry_msgs)  # removed slam_toolbox
@@ -41,6 +50,10 @@ ament_target_dependencies(arm_position_publisher  dynamixel_sdk dynamixel_sdk_cu
 add_executable(arm_position_subscriber src/arm_position_subscriber.cpp)
 ament_target_dependencies(arm_position_subscriber  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
 
+add_executable(tennis_ball_detector src/tennis_ball_detection_main.cpp src/Tennis_Ball_Detection/TennisBallDetector.cpp)
+target_include_directories(tennis_ball_detector PRIVATE ${OpenCV_INCLUDE_DIRS} ${ONNXRUNTIME_INCLUDE_DIRS} src/)
+target_link_libraries(tennis_ball_detector ${OpenCV_LIBS} ${ONNXRUNTIME_LIB})
+
 install(TARGETS
   executive 
   pose_srv
@@ -48,6 +61,7 @@ install(TARGETS
   image_subscriber
   arm_position_publisher
   arm_position_subscriber
+  tennis_ball_detector
   DESTINATION lib/${PROJECT_NAME})
 
 install(
