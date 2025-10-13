@@ -63,6 +63,10 @@ add_executable(tennis_ball_detector src/tennis_ball_detection_publisher.cpp)
 ament_target_dependencies(tennis_ball_detector rclcpp std_msgs sensor_msgs message_interfaces cv_bridge)
 target_include_directories(tennis_ball_detector PRIVATE ${OPENCV_LOCAL_INCLUDE_DIRS} ${ONNXRUNTIME_INCLUDE_DIRS} src/)
 target_link_libraries(tennis_ball_detector ${OPENCV_LOCAL_LIBS} ${ONNXRUNTIME_LIB})
+set_target_properties(tennis_ball_detector PROPERTIES
+    BUILD_RPATH "${ONNXRUNTIME_LIB_DIRS}"
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/onnxruntime/lib"
+)
 
 install(TARGETS
   executive 
@@ -93,6 +97,11 @@ install(
   DIRECTORY
     models/
   DESTINATION share/${PROJECT_NAME}/models
+)
+install(
+  DIRECTORY
+    onnxruntime-linux-x64-1.16.3/lib/
+  DESTINATION lib/${PROJECT_NAME}/onnxruntime/lib
 )
 
 # find dependencies
