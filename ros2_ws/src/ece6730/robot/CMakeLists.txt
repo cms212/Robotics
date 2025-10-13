@@ -17,19 +17,28 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-# find_package(slam_toolbox REQUIRED)  # Commented out due to yaml-cpp dependency issue
 find_package(sensor_msgs REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(dynamixel_sdk_custom_interfaces REQUIRED)
 find_package(message_interfaces REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(cv_bridge REQUIRED)
 find_package(PkgConfig REQUIRED)
 
-# Add ONNX Runtime
 set(ONNXRUNTIME_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime-linux-x64-1.16.3)
 set(ONNXRUNTIME_INCLUDE_DIRS ${ONNXRUNTIME_ROOT_PATH}/include)
 set(ONNXRUNTIME_LIB_DIRS ${ONNXRUNTIME_ROOT_PATH}/lib)
 find_library(ONNXRUNTIME_LIB onnxruntime HINTS ${ONNXRUNTIME_LIB_DIRS})
+
+set(OPENCV_LOCAL_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/opencv-local)
+set(OPENCV_LOCAL_INCLUDE_DIRS ${OPENCV_LOCAL_ROOT_PATH}/include)
+set(OPENCV_LOCAL_LIB_DIRS ${OPENCV_LOCAL_ROOT_PATH}/lib)
+find_library(OPENCV_CORE_LIB opencv_core HINTS ${OPENCV_LOCAL_LIB_DIRS})
+find_library(OPENCV_IMGPROC_LIB opencv_imgproc HINTS ${OPENCV_LOCAL_LIB_DIRS})
+find_library(OPENCV_IMGCODECS_LIB opencv_imgcodecs HINTS ${OPENCV_LOCAL_LIB_DIRS})
+find_library(OPENCV_HIGHGUI_LIB opencv_highgui HINTS ${OPENCV_LOCAL_LIB_DIRS})
+find_library(OPENCV_VIDEOIO_LIB opencv_videoio HINTS ${OPENCV_LOCAL_LIB_DIRS})
+find_library(OPENCV_DNN_LIB opencv_dnn HINTS ${OPENCV_LOCAL_LIB_DIRS})
+set(OPENCV_LOCAL_LIBS ${OPENCV_CORE_LIB} ${OPENCV_IMGPROC_LIB} ${OPENCV_IMGCODECS_LIB} ${OPENCV_HIGHGUI_LIB} ${OPENCV_VIDEOIO_LIB} ${OPENCV_DNN_LIB})
 
 
 add_executable(executive src/executive.cpp)
@@ -50,9 +59,10 @@ ament_target_dependencies(arm_position_publisher  dynamixel_sdk dynamixel_sdk_cu
 add_executable(arm_position_subscriber src/arm_position_subscriber.cpp)
 ament_target_dependencies(arm_position_subscriber  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
 
-add_executable(tennis_ball_detector src/tennis_ball_detection_main.cpp src/Tennis_Ball_Detection/TennisBallDetector.cpp)
-target_include_directories(tennis_ball_detector PRIVATE ${OpenCV_INCLUDE_DIRS} ${ONNXRUNTIME_INCLUDE_DIRS} src/)
-target_link_libraries(tennis_ball_detector ${OpenCV_LIBS} ${ONNXRUNTIME_LIB})
+add_executable(tennis_ball_detector src/tennis_ball_detection_publisher.cpp)
+ament_target_dependencies(tennis_ball_detector rclcpp std_msgs sensor_msgs message_interfaces cv_bridge)
+target_include_directories(tennis_ball_detector PRIVATE ${OPENCV_LOCAL_INCLUDE_DIRS} ${ONNXRUNTIME_INCLUDE_DIRS} src/)
+target_link_libraries(tennis_ball_detector ${OPENCV_LOCAL_LIBS} ${ONNXRUNTIME_LIB})
 
 install(TARGETS
   executive 

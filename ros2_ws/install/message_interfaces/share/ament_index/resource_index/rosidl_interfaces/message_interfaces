@@ -1,2 +1,4 @@
 msg/ArmPosition.idl
 msg/ArmPosition.msg
+msg/TennisBallDetection.idl
+msg/TennisBallDetection.msg

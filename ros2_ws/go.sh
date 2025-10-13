@@ -4,5 +4,5 @@
 colcon build
 source install/setup.bash
 #ros2 launch robot arm_position_subpub_launch.py
-ros2 launch urdf_tutorial_cpp joint_position_launch.py
-
+#ros2 launch urdf_tutorial_cpp joint_position_launch.py
+ros2 launch robot detection_launch.py
