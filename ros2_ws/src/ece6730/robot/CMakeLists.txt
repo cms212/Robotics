@@ -68,6 +68,9 @@ set_target_properties(tennis_ball_detector PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/onnxruntime/lib"
 )
 
+add_executable(detection_info_subscriber src/tennisball_to_camera_orientation.cpp)
+ament_target_dependencies(detection_info_subscriber rclcpp message_interfaces)
+
 install(TARGETS
   executive 
   pose_srv
@@ -76,6 +79,7 @@ install(TARGETS
   arm_position_publisher
   arm_position_subscriber
   tennis_ball_detector
+  detection_info_subscriber
   DESTINATION lib/${PROJECT_NAME})
 
 install(

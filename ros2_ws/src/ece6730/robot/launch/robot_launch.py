@@ -9,4 +9,8 @@ def generate_launch_description():
             package='robot',
             executable='tennis_ball_detector',
         ),
+        Node(
+            package='robot',
+            executable='detection_info_subscriber',
+        ),
     ])
