@@ -1,5 +1,5 @@
 #include <memory>
-
+#include <cmath>
 #include "rclcpp/rclcpp.hpp"
 #include "message_interfaces/msg/tennis_ball_detection.hpp"
 
@@ -19,9 +19,9 @@ public:
         auto distance_processing_callback =
         [this](message_interfaces::msg::TennisBallDetection::UniquePtr msg) -> void {
             float r = 
-            x = processX(*msg, r);
-            y = processY(*msg, r);
-            z = processZ(*msg, r);
+            x = processX(*msg);
+            y = processY(*msg);
+            z = processZ(*msg);
             RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", x, y, z);
         };
 
@@ -31,19 +31,34 @@ public:
 
 private:
     rclcpp::Subscription<message_interfaces::msg::TennisBallDetection>::SharedPtr detection_info_subscription;
-    private float camera_fov = 70.42;
-    private float tennis_ball_width =  .067; // meters
-    private float x;
-    private float y;
-    private float z;
-    private float processX(const message_interfaces::msg::TennisBallDetection::UniquePtr &msg, float r){
-
+    float camera_fov_x = 70.42 * (M_PI / 180); // radians
+    float camera_fov_y = 43.3 * (M_PI / 180); // radians
+    float image_width = 640.0; // pixels
+    float image_height = 640.0; // pixels
+    float tennis_ball_width =  .067; // meters
+    float x;
+    float y;
+    float z;
+    float processX(message_interfaces::msg::TennisBallDetection& msg){
+        float z = processZ(msg);
+        float temp = (((msg.left_x + msg.right_x) / 2.0) - (image_width / 2.0))/calculateFocalLengthX();
+        return temp * z;
     }
-    private float processY(const message_interfaces::msg::TennisBallDetection::UniquePtr &msg, float r){
-
+    float processY(message_interfaces::msg::TennisBallDetection& msg){
+        float z = processZ(msg);
+        float temp = (((msg.top_y + msg.bottom_y) / 2.0) - (image_height / 2.0))/calculateFocalLengthY();
+        return temp * z;
     }
-    private float processZ(const message_interfaces::msg::TennisBallDetection::UniquePtr &msg, float r){
-
+    float processZ(message_interfaces::msg::TennisBallDetection& msg){
+        float x_focal_length = calculateFocalLengthX();
+        float ball_pixel_width = msg.right_x - msg.left_x;
+        return (tennis_ball_width * x_focal_length) / ball_pixel_width;
+    }
+    float calculateFocalLengthX(){
+        return (image_width / 2) / tan(camera_fov_x / 2);
+    }
+    float calculateFocalLengthY(){
+        return (image_height / 2) / tan(camera_fov_y / 2);
     }
 };
 
