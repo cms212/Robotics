@@ -59,6 +59,9 @@ ament_target_dependencies(arm_position_publisher  dynamixel_sdk dynamixel_sdk_cu
 add_executable(arm_position_subscriber src/arm_position_subscriber.cpp)
 ament_target_dependencies(arm_position_subscriber  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
 
+add_executable(joint_states_publisher src/joint_states_publisher.cpp)
+ament_target_dependencies(joint_states_publisher  dynamixel_sdk dynamixel_sdk_custom_interfaces sensor_msgs rclcpp tf2 tf2_ros)
+
 add_executable(tennis_ball_detector src/tennis_ball_detection_publisher.cpp)
 ament_target_dependencies(tennis_ball_detector rclcpp std_msgs sensor_msgs message_interfaces cv_bridge)
 target_include_directories(tennis_ball_detector PRIVATE ${OPENCV_LOCAL_INCLUDE_DIRS} ${ONNXRUNTIME_INCLUDE_DIRS} src/)
@@ -80,6 +83,7 @@ install(TARGETS
   arm_position_subscriber
   tennis_ball_detector
   detection_info_subscriber
+  joint_states_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 install(
@@ -101,6 +105,11 @@ install(
   DIRECTORY
     models/
   DESTINATION share/${PROJECT_NAME}/models
+)
+install(
+  DIRECTORY
+    urdf/
+  DESTINATION share/${PROJECT_NAME}/urdf
 )
 install(
   DIRECTORY

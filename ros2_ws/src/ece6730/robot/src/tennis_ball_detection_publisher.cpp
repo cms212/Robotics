@@ -11,11 +11,11 @@
 
 using namespace std::chrono_literals;
 
-class CameraNode : public rclcpp::Node
+class TennisBallDetectorPublisher : public rclcpp::Node
 {
 public:
-  CameraNode()
-  : Node("tennis_ball_detector_node")
+  TennisBallDetectorPublisher()
+  : Node("tennis_ball_detector_publisher")
   {
     publisher = this->create_publisher<message_interfaces::msg::TennisBallDetection>("detection_info", 10);
     // Initialize camera
@@ -37,12 +37,12 @@ public:
     }
 
     timer_ = this->create_wall_timer(
-      100ms, std::bind(&CameraNode::process_frame, this));
-    
+      100ms, std::bind(&TennisBallDetectorPublisher::process_frame, this));
+
     //RCLCPP_INFO(this->get_logger(), "Tennis Ball Detector Node started");
   }
 
-  ~CameraNode()
+  ~TennisBallDetectorPublisher()
   {
     if (cap_.isOpened()) {
       cap_.release();
@@ -135,7 +135,7 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<CameraNode>());
+  rclcpp::spin(std::make_shared<TennisBallDetectorPublisher>());
   rclcpp::shutdown();
   return 0;
 }

@@ -5,24 +5,21 @@
 
 
 
-class DetectionInfoSubscriber : public rclcpp::Node
+class TennisBallPositionPublisher : public rclcpp::Node
 {
 public:
-    DetectionInfoSubscriber()
-    : Node("detection_info_subscriber")
+    TennisBallPositionPublisher()
+    : Node("tennis_ball_position_publisher")
     {
         auto topic_callback =
         [this](message_interfaces::msg::TennisBallDetection::UniquePtr msg) -> void {
             RCLCPP_INFO(this->get_logger(), "I heard: 'left_x:%d /n right_x:%d /n top_y:%d /n bottom_y:%d'", msg->left_x, msg->right_x, msg->top_y, msg->bottom_y);
-        };
-
-        auto distance_processing_callback =
-        [this](message_interfaces::msg::TennisBallDetection::UniquePtr msg) -> void {
-            float r = 
             x = processX(*msg);
             y = processY(*msg);
             z = processZ(*msg);
             RCLCPP_INFO(this->get_logger(), "x: %f, y: %f, z: %f", x, y, z);
+
+            
         };
 
         detection_info_subscription =
@@ -65,7 +62,7 @@ private:
 int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<DetectionInfoSubscriber>());
+    rclcpp::spin(std::make_shared<TennisBallPositionPublisher>());
     rclcpp::shutdown();
     return 0;
 }
