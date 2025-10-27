@@ -41,23 +41,23 @@ find_library(OPENCV_DNN_LIB opencv_dnn HINTS ${OPENCV_LOCAL_LIB_DIRS})
 set(OPENCV_LOCAL_LIBS ${OPENCV_CORE_LIB} ${OPENCV_IMGPROC_LIB} ${OPENCV_IMGCODECS_LIB} ${OPENCV_HIGHGUI_LIB} ${OPENCV_VIDEOIO_LIB} ${OPENCV_DNN_LIB})
 
 
-add_executable(executive src/executive.cpp)
-ament_target_dependencies(executive rclcpp behaviortree_cpp behaviortree_ros2 nav2_msgs  nav_msgs ros_interfaces tf2 tf2_ros tf2_geometry_msgs)  # removed slam_toolbox
+#add_executable(executive src/executive.cpp)
+#ament_target_dependencies(executive rclcpp behaviortree_cpp behaviortree_ros2 nav2_msgs  nav_msgs ros_interfaces tf2 tf2_ros tf2_geometry_msgs)  # removed slam_toolbox
 
-add_executable(pose_srv src/get_pose_server.cpp)
-ament_target_dependencies(pose_srv rclcpp nav2_msgs  nav_msgs ros_interfaces tf2 tf2_ros)
+#add_executable(pose_srv src/get_pose_server.cpp)
+#ament_target_dependencies(pose_srv rclcpp nav2_msgs  nav_msgs ros_interfaces tf2 tf2_ros)
 
-add_executable(pose_publisher src/pose_publisher.cpp)
-ament_target_dependencies(pose_publisher rclcpp nav2_msgs nav_msgs tf2 tf2_ros tf2_geometry_msgs)
+#add_executable(pose_publisher src/pose_publisher.cpp)
+#ament_target_dependencies(pose_publisher rclcpp nav2_msgs nav_msgs tf2 tf2_ros tf2_geometry_msgs)
 
-add_executable(image_subscriber src/image_subscriber.cpp)
-ament_target_dependencies(image_subscriber rclcpp sensor_msgs tf2 tf2_ros)
+#add_executable(image_subscriber src/image_subscriber.cpp)
+#ament_target_dependencies(image_subscriber rclcpp sensor_msgs tf2 tf2_ros)
 
-add_executable(arm_position_publisher src/arm_position_publisher.cpp)
-ament_target_dependencies(arm_position_publisher  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
+#add_executable(arm_position_publisher src/arm_position_publisher.cpp)
+#ament_target_dependencies(arm_position_publisher  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
 
-add_executable(arm_position_subscriber src/arm_position_subscriber.cpp)
-ament_target_dependencies(arm_position_subscriber  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
+#add_executable(arm_position_subscriber src/arm_position_subscriber.cpp)
+#ament_target_dependencies(arm_position_subscriber  dynamixel_sdk dynamixel_sdk_custom_interfaces message_interfaces rclcpp tf2 tf2_ros)
 
 add_executable(joint_states_publisher src/joint_states_publisher.cpp)
 ament_target_dependencies(joint_states_publisher  dynamixel_sdk dynamixel_sdk_custom_interfaces sensor_msgs rclcpp tf2 tf2_ros)
@@ -71,19 +71,23 @@ set_target_properties(tennis_ball_detector PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/onnxruntime/lib"
 )
 
-add_executable(detection_info_subscriber src/tennisball_to_camera_orientation.cpp)
-ament_target_dependencies(detection_info_subscriber rclcpp message_interfaces)
+add_executable(tennis_ball_to_camera_orientation src/tennisball_to_camera_orientation.cpp)
+ament_target_dependencies(tennis_ball_to_camera_orientation rclcpp message_interfaces)
+
+add_executable(tf_publisher src/tf_publisher.cpp)
+ament_target_dependencies(tf_publisher rclcpp message_interfaces tf2 tf2_ros geometry_msgs)
 
 install(TARGETS
-  executive 
-  pose_srv
-  pose_publisher
-  image_subscriber
-  arm_position_publisher
-  arm_position_subscriber
+  #executive 
+  #pose_srv
+  #pose_publisher
+  #image_subscriber
+  #arm_position_publisher
+  #arm_position_subscriber
   tennis_ball_detector
-  detection_info_subscriber
+  tennis_ball_to_camera_orientation
   joint_states_publisher
+  tf_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 install(

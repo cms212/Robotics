@@ -1,1 +1,28 @@
-/home/christophersantos1/Robotics/ros2_ws/src/ece6730/urdf_tutorial_cpp/package.xml
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>urdf_tutorial_cpp</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="christopher.santos1@mail.weber.edu">christophersantos1</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>btcpp_ros2_interfaces</build_depend>
+  <build_depend>behaviortree_ros2</build_depend>
+  <build_depend>ros_interfaces</build_depend>
+  <build_depend>dynamixel_sdk</build_depend>
+  <build_depend>dynamixel_sdk_custom_interfaces</build_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <exec_depend>dynamixel_sdk</exec_depend>
+  <exec_depend>dynamixel_sdk_custom_interfaces</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+  <depend>message_interfaces</depend>
+</package>

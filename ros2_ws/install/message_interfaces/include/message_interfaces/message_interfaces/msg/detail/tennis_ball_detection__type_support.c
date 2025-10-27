@@ -4,9 +4,9 @@
 
 #include <string.h>
 
+#include "message_interfaces/msg/detail/tennis_ball_detection__type_support.h"
 #include "message_interfaces/msg/detail/tennis_ball_detection__struct.h"
 #include "message_interfaces/msg/detail/tennis_ball_detection__functions.h"
-#include "message_interfaces/msg/detail/tennis_ball_detection__type_support.h"
 #include "rosidl_typesupport_interface/macros.h"
 
 #ifdef __cplusplus

@@ -35,7 +35,11 @@ def generate_launch_description():
         ),
         Node(
             package='robot',
-            executable='detection_info_subscriber',
+            executable='tennis_ball_to_camera_orientation',
+        ),
+        Node(
+            package='robot',
+            executable='tf_publisher',
         ),
         Node(
             package='robot',

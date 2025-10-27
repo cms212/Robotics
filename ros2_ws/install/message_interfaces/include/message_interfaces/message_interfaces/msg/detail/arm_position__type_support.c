@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "message_interfaces/msg/detail/arm_position__struct.h"
-#include "message_interfaces/msg/detail/arm_position__type_support.h"
 #include "message_interfaces/msg/detail/arm_position__functions.h"
+#include "message_interfaces/msg/detail/arm_position__type_support.h"
 #include "rosidl_typesupport_interface/macros.h"
 
 #ifdef __cplusplus
