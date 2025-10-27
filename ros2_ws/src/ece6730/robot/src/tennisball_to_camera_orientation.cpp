@@ -34,7 +34,16 @@ public:
             orientation_msg_.z = z;
             orientation_publisher_->publish(orientation_msg_);
             
-        
+            // Debug info to verify centering
+            float center_x = (msg->left_x + msg->right_x) / 2.0;
+            float center_y = (msg->top_y + msg->bottom_y) / 2.0;
+            float offset_from_principal_x = center_x - principal_point_x;
+            float offset_from_principal_y = center_y - principal_point_y;
+            
+            RCLCPP_INFO(this->get_logger(), "Ball center: (%.1f, %.1f) px, Principal point: (%.1f, %.1f) px", 
+                       center_x, center_y, principal_point_x, principal_point_y);
+            RCLCPP_INFO(this->get_logger(), "Offset from principal point: (%.1f, %.1f) px", 
+                       offset_from_principal_x, offset_from_principal_y);
             RCLCPP_INFO(this->get_logger(), "Tennis ball position - X: %.3f m, Y: %.3f m, Z: %.3f m", x, y, z);
             
             // Calculate pixel size for diagnostic
@@ -53,8 +62,12 @@ private:
     rclcpp::Subscription<message_interfaces::msg::TennisBallDetection>::SharedPtr detection_info_subscription;
     float camera_fov_x = 70.42 * (M_PI / 180); // radians
     float camera_fov_y = 43.3 * (M_PI / 180); // radians
-    float image_width = 640.0; // pixels
-    float image_height = 640.0; // pixels
+    float image_width = 800; // pixels
+    float image_height = 440; // pixels
+    
+   
+    float principal_point_x = 400; 
+    float principal_point_y = 220; 
     float tennis_ball_width =  .067; // meters
     float x;
     float y;
@@ -62,22 +75,16 @@ private:
     float processX(message_interfaces::msg::TennisBallDetection& msg){
         float z = processZ(msg);
         float center_x = (msg.left_x + msg.right_x) / 2.0;
-        float image_center_x = image_width / 2.0;
         
-        // Convert from pixel coordinates to camera coordinates
-        float x_camera = (center_x - image_center_x) * z / calculateFocalLengthX();
+        float x_camera = (center_x - principal_point_x) * z / calculateFocalLengthX();
         
-        return x_camera;
+        return -x_camera;
     }
     float processY(message_interfaces::msg::TennisBallDetection& msg){
         float z = processZ(msg);
         float center_y = (msg.top_y + msg.bottom_y) / 2.0;
-        float image_center_y = image_height / 2.0;
         
-        // Convert from image coordinates to camera coordinates
-        // Image coords: Y=0 at top, increases downward
-        // Camera coords: Y=0 at center, positive upward (standard convention)
-        float y_camera = -(center_y - image_center_y) * z / calculateFocalLengthY();
+        float y_camera = -(center_y - principal_point_y) * z / calculateFocalLengthY();
         
         return y_camera;
     }
@@ -88,11 +95,9 @@ private:
         float ball_pixel_width = msg.right_x - msg.left_x;
         float ball_pixel_height = msg.bottom_y - msg.top_y;
         
-        // Calculate distance using both width and height for better accuracy
         float z_from_width = (tennis_ball_width * x_focal_length) / ball_pixel_width;
         float z_from_height = (tennis_ball_width * y_focal_length) / ball_pixel_height;
         
-        // Average the two measurements for more robust estimation
         float z_average = (z_from_width + z_from_height) / 2.0;
         
         return z_average;
