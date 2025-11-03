@@ -1,1 +1,1 @@
-cv_bridge:dynamixel_sdk:dynamixel_sdk_custom_interfaces:geometry_msgs:message_interfaces:opencv4:sensor_msgs
+cv_bridge:dynamixel_sdk:dynamixel_sdk_custom_interfaces:geometry_msgs:message_interfaces:opencv4:rclpy:sensor_msgs:std_msgs

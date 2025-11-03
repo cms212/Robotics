@@ -90,6 +90,12 @@ install(TARGETS
   tf_publisher
   DESTINATION lib/${PROJECT_NAME})
 
+# Install Python scripts
+install(PROGRAMS
+  src/arduinotest.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(
   DIRECTORY
     config/
