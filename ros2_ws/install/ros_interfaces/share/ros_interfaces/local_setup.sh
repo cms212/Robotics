@@ -2,11 +2,7 @@
 
 # since this file is sourced use either the provided AMENT_CURRENT_PREFIX
 # or fall back to the destination set at configure time
-<<<<<<< HEAD
 : ${AMENT_CURRENT_PREFIX:="/home/chris-santos/Robotics/ros2_ws/install/ros_interfaces"}
-=======
-: ${AMENT_CURRENT_PREFIX:="/home/christophersantos1/Robotics/ros2_ws/install/ros_interfaces"}
->>>>>>> 14cb72d115ff28a6472820cd199cd0f1831fc5b4
 if [ ! -d "$AMENT_CURRENT_PREFIX" ]; then
   if [ -z "$COLCON_CURRENT_PREFIX" ]; then
     echo "The compile time prefix path '$AMENT_CURRENT_PREFIX' doesn't " \

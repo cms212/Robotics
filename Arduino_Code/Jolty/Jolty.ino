@@ -42,7 +42,7 @@ void loop()
   if (stringComplete) {
     Serial.println(inputString);
     // clear the string:
-    if(inputString == "1f"){
+    if(inputString == "1f\n"){
       ST.motor(1,80);
     }
     else if(inputString == "1b\n"){

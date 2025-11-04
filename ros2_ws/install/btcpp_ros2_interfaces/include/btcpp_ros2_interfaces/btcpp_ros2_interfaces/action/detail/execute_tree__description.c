@@ -203,15 +203,10 @@ btcpp_ros2_interfaces__action__ExecuteTree_FeedbackMessage__get_type_hash(
 #include <string.h>
 
 // Include directives for referenced types
-#include "btcpp_ros2_interfaces/msg/detail/node_status__functions.h"
-#include "builtin_interfaces/msg/detail/time__functions.h"
-<<<<<<< HEAD
-#include "btcpp_ros2_interfaces/msg/detail/node_status__functions.h"
-#include "service_msgs/msg/detail/service_event_info__functions.h"
-=======
-#include "service_msgs/msg/detail/service_event_info__functions.h"
 #include "unique_identifier_msgs/msg/detail/uuid__functions.h"
->>>>>>> 14cb72d115ff28a6472820cd199cd0f1831fc5b4
+#include "builtin_interfaces/msg/detail/time__functions.h"
+#include "btcpp_ros2_interfaces/msg/detail/node_status__functions.h"
+#include "service_msgs/msg/detail/service_event_info__functions.h"
 
 // Hashes for external referenced types
 #ifndef NDEBUG

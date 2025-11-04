@@ -6,6 +6,8 @@ import serial
 g_ser = None
 on = False
 a_node = None
+commands = ["1f\n", "1b\n", "1s\n", "2f\n", "2b\n", "2s\n"]
+current_command = 0
 
 class ArduinoNode(Node):
     def __init__(self):
@@ -19,15 +21,10 @@ class ArduinoNode(Node):
 
     def arduino_command(self):
         global g_ser
-        global on
-        if on:
-            g_ser.write("0\n".encode())
-            on = False
-            a_node.get_logger().info('LED OFF command sent to Arduino')
-        else:
-            g_ser.write("1\n".encode())
-            on = True
-            a_node.get_logger().info('LED ON command sent to Arduino')
+        global current_command
+        g_ser.write(commands[current_command].encode())
+        current_command = (current_command + 1) % len(commands)
+        print(f"Sent command: {commands[current_command-1].strip()}")
 
 
 def main(args=None):
