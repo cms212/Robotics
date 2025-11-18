@@ -15,6 +15,22 @@
 /*******************************************************************************
 // This example is written for DYNAMIXEL X(excluding XL-320) and MX(2.0) series with U2D2.
 // For other series, please refer to the product eManual and modify the Control Table addresses and other definitions.
+// Copyright 2021 ROBOTIS CO., LTD.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This example is written for DYNAMIXEL X(excluding XL-320) and MX(2.0) series with U2D2.
+// For other series, please refer to the product eManual and modify the Control Table addresses and other definitions.
 // To test this example, please follow the commands below.
 //
 // Open terminal #1
@@ -25,7 +41,7 @@
 // $ ros2 service call /get_position dynamixel_sdk_custom_interfaces/srv/GetPosition "id: 1"
 //
 // Author: Will Son
-*******************************************************************************/
+******************************************************************************/
 #include <chrono>
 #include <cstdio>
 #include <memory>
@@ -84,11 +100,11 @@ public:
             &dxl_error
           );
 
-          if (dxl_comm_result != COMM_SUCCESS) {
+          /*if (dxl_comm_result != COMM_SUCCESS) {
             RCLCPP_ERROR(this->get_logger(), "%s", packetHandler->getTxRxResult(dxl_comm_result));
           } else if (dxl_error != 0) {
             RCLCPP_ERROR(this->get_logger(), "%s", packetHandler->getRxPacketError(dxl_error));
-          }
+          }*/
 
           joint_states.position.push_back(present_position  * (2 * M_PI / 4095));  // Convert to radians
         
@@ -134,7 +150,39 @@ void setupDynamixel(uint8_t dxl_id)
     portHandler,
     dxl_id,
     ADDR_TORQUE_ENABLE,
-    0,
+    1,
+    &dxl_error
+  );
+
+  packetHandler->write4ByteTxRx(
+    portHandler,
+    1,
+    ADDR_GOAL_POSITION,
+    2048,
+    &dxl_error
+  );
+
+  packetHandler->write4ByteTxRx(
+    portHandler,
+    2,
+    ADDR_GOAL_POSITION,
+    1024,
+    &dxl_error
+  );
+
+  packetHandler->write4ByteTxRx(
+    portHandler,
+    3,
+    ADDR_GOAL_POSITION,
+    2500,
+    &dxl_error
+  );
+  
+  packetHandler->write4ByteTxRx(
+    portHandler,
+    4,
+    ADDR_GOAL_POSITION,
+    2048,
     &dxl_error
   );
 

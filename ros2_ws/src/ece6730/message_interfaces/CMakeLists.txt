@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmPosition.msg"
   "msg/TennisBallDetection.msg"
   "msg/TennisBallOrientation.msg"
+  "msg/ArduinoCommand.msg"
 )
 
 if(BUILD_TESTING)

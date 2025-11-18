@@ -39,6 +39,10 @@ def generate_launch_description():
         ),
         Node(
             package='robot',
+            executable='movement_to_tennisball_publisher',
+            ),
+        Node(
+            package='robot',
             executable='tf_publisher',
         ),
         Node(
@@ -55,5 +59,12 @@ def generate_launch_description():
             output='screen',
             parameters=[{'use_sim_time': use_sim_time}],
             arguments=['-d', PathJoinSubstitution([FindPackageShare('urdf_tutorial_cpp'), 'config', 'urdf.rviz'])]
+        ),
+        Node(
+            package='robot',
+            executable='arduinocommands.py',
+            name='arduino_publisher',
+            output='screen',
+            parameters=[],
         ),
     ])

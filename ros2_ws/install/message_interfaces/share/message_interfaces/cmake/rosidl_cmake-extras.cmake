@@ -1,4 +1,4 @@
 # generated from rosidl_cmake/cmake/rosidl_cmake-extras.cmake.in
 
-set(message_interfaces_IDL_FILES "msg/ArmPosition.idl;msg/TennisBallDetection.idl;msg/TennisBallOrientation.idl")
-set(message_interfaces_INTERFACE_FILES "msg/ArmPosition.msg;msg/TennisBallDetection.msg;msg/TennisBallOrientation.msg")
+set(message_interfaces_IDL_FILES "msg/ArmPosition.idl;msg/TennisBallDetection.idl;msg/TennisBallOrientation.idl;msg/ArduinoCommand.idl")
+set(message_interfaces_INTERFACE_FILES "msg/ArmPosition.msg;msg/TennisBallDetection.msg;msg/TennisBallOrientation.msg;msg/ArduinoCommand.msg")

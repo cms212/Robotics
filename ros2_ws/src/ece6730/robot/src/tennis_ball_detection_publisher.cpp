@@ -70,6 +70,7 @@ private:
     
     for (auto &detection : detections) {
         // Draw bounding box
+        //RCLCPP_INFO(this->get_logger(), "%d", detections.size());
         cv::Scalar box_color = colors[detection.class_id % colors.size()];
         cv::rectangle(frame, detection.box, box_color, 2);
       

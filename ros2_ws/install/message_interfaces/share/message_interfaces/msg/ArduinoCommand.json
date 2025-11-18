@@ -1,0 +1,26 @@
+{
+  "type_description_msg": {
+    "type_description": {
+      "type_name": "message_interfaces/msg/ArduinoCommand",
+      "fields": [
+        {
+          "name": "arduino_command",
+          "type": {
+            "type_id": 17,
+            "capacity": 0,
+            "string_capacity": 0,
+            "nested_type_name": ""
+          },
+          "default_value": ""
+        }
+      ]
+    },
+    "referenced_type_descriptions": []
+  },
+  "type_hashes": [
+    {
+      "type_name": "message_interfaces/msg/ArduinoCommand",
+      "hash_string": "RIHS01_35658d0ed5c9cebf24beb213ff2825e8f1a4733ad00335b99aae09f73139c602"
+    }
+  ]
+}

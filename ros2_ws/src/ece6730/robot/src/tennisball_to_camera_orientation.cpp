@@ -16,8 +16,8 @@ public:
         orientation_publisher_ = this->create_publisher<message_interfaces::msg::TennisBallOrientation>("orientation_info", 10);
         auto topic_callback =
         [this](message_interfaces::msg::TennisBallDetection::UniquePtr msg) -> void {
-            RCLCPP_INFO(this->get_logger(), "Detection: left_x:%d, right_x:%d, top_y:%d, bottom_y:%d", 
-                       msg->left_x, msg->right_x, msg->top_y, msg->bottom_y);
+            //RCLCPP_INFO(this->get_logger(), "Detection: left_x:%d, right_x:%d, top_y:%d, bottom_y:%d", 
+                       //msg->left_x, msg->right_x, msg->top_y, msg->bottom_y);
             
             // Validate bounding box
             if (msg->left_x >= msg->right_x || msg->top_y >= msg->bottom_y) {
@@ -34,7 +34,6 @@ public:
             orientation_msg_.z = z;
             orientation_publisher_->publish(orientation_msg_);
             
-            // Debug info to verify centering
             float center_x = (msg->left_x + msg->right_x) / 2.0;
             float center_y = (msg->top_y + msg->bottom_y) / 2.0;
             float offset_from_principal_x = center_x - principal_point_x;
@@ -47,9 +46,9 @@ public:
             RCLCPP_INFO(this->get_logger(), "Tennis ball position - X: %.3f m, Y: %.3f m, Z: %.3f m", x, y, z);
             
             // Calculate pixel size for diagnostic
-            float pixel_width = msg->right_x - msg->left_x;
-            float pixel_height = msg->bottom_y - msg->top_y;
-            RCLCPP_INFO(this->get_logger(), "Bounding box size - Width: %.1f px, Height: %.1f px", pixel_width, pixel_height);
+            //float pixel_width = msg->right_x - msg->left_x;
+            //float pixel_height = msg->bottom_y - msg->top_y;
+            //RCLCPP_INFO(this->get_logger(), "Bounding box size - Width: %.1f px, Height: %.1f px", pixel_width, pixel_height);
         };
 
         detection_info_subscription =

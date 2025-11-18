@@ -77,6 +77,9 @@ ament_target_dependencies(tennis_ball_to_camera_orientation rclcpp message_inter
 add_executable(tf_publisher src/tf_publisher.cpp)
 ament_target_dependencies(tf_publisher rclcpp message_interfaces tf2 tf2_ros geometry_msgs)
 
+add_executable(movement_to_tennisball_publisher src/movement_to_tennisball_publisher.cpp)
+ament_target_dependencies(movement_to_tennisball_publisher rclcpp message_interfaces)
+
 install(TARGETS
   #executive 
   #pose_srv
@@ -88,11 +91,11 @@ install(TARGETS
   tennis_ball_to_camera_orientation
   joint_states_publisher
   tf_publisher
+  movement_to_tennisball_publisher
   DESTINATION lib/${PROJECT_NAME})
 
-# Install Python scripts
 install(PROGRAMS
-  src/arduinotest.py
+  src/arduinocommands.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
