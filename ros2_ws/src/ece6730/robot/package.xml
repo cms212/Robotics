@@ -35,6 +35,4 @@
   <export>
     <build_type>ament_cmake</build_type>
   </export>
-
-  <depend>message_interfaces</depend>
 </package>

@@ -1,1 +1,1 @@
-message_interfaces;dynamixel_sdk;dynamixel_sdk_custom_interfaces;sensor_msgs;geometry_msgs;cv_bridge;opencv4;rclpy;std_msgs;ament_lint_auto;ament_lint_common
+dynamixel_sdk;dynamixel_sdk_custom_interfaces;sensor_msgs;geometry_msgs;cv_bridge;opencv4;rclpy;std_msgs;ros_interfaces;message_interfaces;ament_lint_auto;ament_lint_common

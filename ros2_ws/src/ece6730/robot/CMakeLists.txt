@@ -80,6 +80,12 @@ ament_target_dependencies(tf_publisher rclcpp message_interfaces tf2 tf2_ros geo
 add_executable(movement_to_tennisball_publisher src/movement_to_tennisball_publisher.cpp)
 ament_target_dependencies(movement_to_tennisball_publisher rclcpp message_interfaces)
 
+add_executable(center_to_tennisball src/center_to_tennisball.cpp)
+ament_target_dependencies(center_to_tennisball rclcpp message_interfaces ros_interfaces)
+
+add_executable(behavior_tree src/behavior_tree.cpp)
+ament_target_dependencies(behavior_tree rclcpp ros_interfaces behaviortree_cpp behaviortree_ros2)
+
 install(TARGETS
   #executive 
   #pose_srv
@@ -92,6 +98,8 @@ install(TARGETS
   joint_states_publisher
   tf_publisher
   movement_to_tennisball_publisher
+  center_to_tennisball
+  behavior_tree
   DESTINATION lib/${PROJECT_NAME})
 
 install(PROGRAMS

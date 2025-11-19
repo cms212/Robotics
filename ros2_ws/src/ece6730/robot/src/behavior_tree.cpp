@@ -1,15 +1,16 @@
-// Minimal behavior tree that queries the `is_centered` service repeatedly
-// and finishes the single stage when the service returns X == 0 (float32).
+// Minimal behavior tree that queries the `centered` service repeatedly
+// and finishes the single stage when the service returns X within [-0.25, 0.25] range.
 
 #include <chrono>
 #include <thread>
 #include <memory>
 #include <iostream>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ros_interfaces/srv/centered.hpp"
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 using namespace std::chrono_literals;
 
@@ -33,10 +34,10 @@ public:
         if (!g_ros_node) {
             throw std::runtime_error("Global ROS node not initialized");
         }
-        client_ = g_ros_node->create_client<ros_interfaces::srv::Centered>("is_centered");
+        client_ = g_ros_node->create_client<ros_interfaces::srv::Centered>("centered");
         // Don't block forever here — the tick loop will handle retries.
         if (!client_->wait_for_service(1s)) {
-            RCLCPP_WARN(g_ros_node->get_logger(), "is_centered service not available yet");
+            RCLCPP_WARN(g_ros_node->get_logger(), "centered service not available yet");
         }
     }
 
@@ -44,7 +45,7 @@ public:
 
     BT::NodeStatus tick() override
     {
-        // Loop until the service returns X == 0 or we are halted.
+        // Loop until the service returns X within [-0.25, 0.25] range or we are halted.
         while (rclcpp::ok()) {
             if (!client_->service_is_ready()) {
                 // Service is not ready yet; yield and let the tree tick again later.
@@ -65,12 +66,21 @@ public:
                 // Check if the response is ready.
                 if (future.wait_for(50ms) == std::future_status::ready) {
                     auto res = future.get();
-                    float X = res->X; // service is float32
-                    RCLCPP_INFO(g_ros_node->get_logger(), "IsCentered service responded X=%.6f", static_cast<double>(X));
-                    if (X == 0.0f) {
+                    float x = res->x; // service is float32
+                    RCLCPP_INFO(g_ros_node->get_logger(), "Centered service responded x=%.6f", static_cast<double>(x));
+                    
+                    // Check if x is within the acceptable range [-0.25, 0.25]
+                    if (std::abs(x) <= 0.25f && !std::isinf(x)) {
+                        RCLCPP_INFO(g_ros_node->get_logger(), "Tennis ball is centered! x=%.3f is within [-0.25, 0.25]", static_cast<double>(x));
                         return BT::NodeStatus::SUCCESS;
                     }
-                    // Not centered yet — report RUNNING and yield so the tree can do other work or be re-ticked.
+                    
+                    // Not centered yet or invalid position — report RUNNING and yield
+                    if (std::isinf(x)) {
+                        RCLCPP_WARN(g_ros_node->get_logger(), "No tennis ball position available (x=inf)");
+                    } else {
+                        RCLCPP_DEBUG(g_ros_node->get_logger(), "Tennis ball not centered: x=%.3f (target: [-0.25, 0.25])", static_cast<double>(x));
+                    }
                     setStatusRunningAndYield();
                     break; // break polling loop to send another request on next iteration
                 }
@@ -115,7 +125,7 @@ int main(int argc, char ** argv)
 
     // Tick the tree until SUCCESS or FAILURE.
     while (rclcpp::ok()) {
-        auto status = tree.tickRoot();
+        auto status = tree.tickOnce();
         if (status == BT::NodeStatus::SUCCESS) {
             std::cout << "Behavior tree: stage succeeded (centered).\n";
             break;

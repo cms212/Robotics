@@ -39,8 +39,20 @@ def generate_launch_description():
         ),
         Node(
             package='robot',
-            executable='movement_to_tennisball_publisher',
-            ),
+            executable='center_to_tennisball',
+            name='center_to_tennisball',
+            output='screen',
+        ),
+        Node(
+            package='robot',
+            executable='behavior_tree',
+            name='behavior_tree',
+            output='screen',
+        ),
+        #Node(
+            #package='robot',
+            #executable='movement_to_tennisball_publisher',
+            #),
         Node(
             package='robot',
             executable='tf_publisher',

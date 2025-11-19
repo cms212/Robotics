@@ -1,47 +1,77 @@
 #include <memory>
-#include <math.h>
+#include <cmath>
+#include <queue>
+#include <mutex>
 #include "rclcpp/rclcpp.hpp"
 #include "message_interfaces/msg/tennis_ball_orientation.hpp"
 #include "message_interfaces/msg/arduino_command.hpp"
-#include <vector>
 #include "ros_interfaces/srv/centered.hpp"
 
 class CenterToTennisBall : public rclcpp::Node
 {
 public:
   CenterToTennisBall()
-  : Node("center_to_tennis_ball")
+  : Node("center_to_tennis_ball"), max_positions_(5)
   {
-    arduino_command_publisher_ =
-      this->create_publisher<message_interfaces::msg::ArduinoCommand>("arduino_command", 10);
-    auto ball_position =
-      [this](message_interfaces::msg::TennisBallOrientation::UniquePtr msg) -> void {
-        //RCLCPP_INFO(this->get_logger(), "X Position: %f", msg->x);
-        //RCLCPP_INFO(this->get_logger(), "Y Position: %f", msg->y);
-        //RCLCPP_INFO(this->get_logger(), "Z Position: %f", msg->z);
-        x_positions.insert(x_positions.begin(), msg->x);      
-        if (x_positions.size() > 5) {
-          x_positions.pop_back();             
-        }
-  };
-    x_service = create_service<ros_interfaces::srv::Centered>("centered", CenterToTennisBall::ball_x);
-    tennisball_to_camera_subscription_ =
-      this->create_subscription<message_interfaces::msg::TennisBallOrientation>("orientation_info", 10, ball_position);
-  }
+    // Initialize with invalid positions
+    for (size_t i = 0; i < max_positions_; ++i) {
+      x_positions_.push(std::numeric_limits<float>::infinity());
+    }
 
-  void ball_x(ros_interfaces::srv::Centered::Request> request,
-          std::shared_ptr<ros_interfaces::srv::Centered::Response> response){
-          float x = x_positions.front();
-          x_positions.erase(x_positions.begin());
-          x_positions.push_back(INFINITY);
-          response->X = x;
-  }
+    // Create service with proper callback binding
+    x_service_ = create_service<ros_interfaces::srv::Centered>(
+      "centered", 
+      std::bind(&CenterToTennisBall::handle_centered_request, this, 
+                std::placeholders::_1, std::placeholders::_2));
 
+    // Create subscription with cleaner lambda
+    tennisball_subscription_ = create_subscription<message_interfaces::msg::TennisBallOrientation>(
+      "orientation_info", 10,
+      [this](const message_interfaces::msg::TennisBallOrientation::SharedPtr msg) {
+        this->process_tennis_ball_position(msg);
+      });
+
+    RCLCPP_INFO(this->get_logger(), "CenterToTennisBall node initialized");
+  }
 
 private:
-  rclcpp::Subscription<message_interfaces::msg::TennisBallOrientation>::SharedPtr tennisball_to_camera_subscription_;
-  std::vector<float> x_positions(5, INFINITY);
-  rclcpp::Service<ros_interfaces::srv::Centered>::SharedPtr x_service;
+  void process_tennis_ball_position(const message_interfaces::msg::TennisBallOrientation::SharedPtr msg)
+  {
+    std::lock_guard<std::mutex> lock(position_mutex_);
+    
+    // Add new position (remove oldest if queue is full)
+    if (x_positions_.size() >= max_positions_) {
+      x_positions_.pop();
+    }
+    x_positions_.push(msg->x);
+    
+    RCLCPP_DEBUG(this->get_logger(), "Received tennis ball position: x=%.2f, queue_size=%zu", 
+                 msg->x, x_positions_.size());
+  }
+
+  void handle_centered_request(
+    const std::shared_ptr<ros_interfaces::srv::Centered::Request> /* request */,
+    std::shared_ptr<ros_interfaces::srv::Centered::Response> response)
+  {
+    std::lock_guard<std::mutex> lock(position_mutex_);
+    
+    if (x_positions_.empty()) {
+      response->x = std::numeric_limits<float>::infinity();
+      RCLCPP_WARN(this->get_logger(), "No tennis ball positions available");
+    } else {
+      // Get the most recent position
+      response->x = x_positions_.back();
+      RCLCPP_DEBUG(this->get_logger(), "Returning tennis ball x position: %.2f", response->x);
+    }
+  }
+
+  // Member variables
+  rclcpp::Subscription<message_interfaces::msg::TennisBallOrientation>::SharedPtr tennisball_subscription_;
+  rclcpp::Service<ros_interfaces::srv::Centered>::SharedPtr x_service_;
+  
+  std::queue<float> x_positions_;
+  std::mutex position_mutex_;
+  const size_t max_positions_;
 };
 
 int main(int argc, char * argv[])

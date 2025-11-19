@@ -2,5 +2,7 @@ action/Fibonacci.action
 action/Fibonacci.idl
 srv/AddTwoInts.idl
 srv/AddTwoInts.srv
+srv/Centered.idl
+srv/Centered.srv
 srv/GetPose.idl
 srv/GetPose.srv

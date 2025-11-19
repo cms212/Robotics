@@ -37,6 +37,18 @@ def generate_launch_description():
             package='robot',
             executable='tennis_ball_to_camera_orientation',
         ),
+        Node(
+            package='robot',
+            executable='center_to_tennisball',
+            name='center_to_tennisball',
+            output='screen',
+        ),
+        Node(
+            package='robot',
+            executable='behavior_tree',
+            name='behavior_tree',
+            output='screen',
+        ),
         #Node(
             #package='robot',
             #executable='movement_to_tennisball_publisher',
