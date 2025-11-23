@@ -17,6 +17,8 @@ public:
   TennisBallDetectorPublisher()
   : Node("tennis_ball_detector_publisher")
   {
+    // Allow optionally showing the camera window; default is false (no window)
+    show_window_ = this->declare_parameter("show_camera_window", false);
     publisher = this->create_publisher<message_interfaces::msg::TennisBallDetection>("detection_info", 10);
     // Initialize camera
     cap_.open(0);
@@ -47,7 +49,9 @@ public:
     if (cap_.isOpened()) {
       cap_.release();
     }
-    cv::destroyAllWindows();
+    if (show_window_) {
+      cv::destroyAllWindows();
+    }
   }
 
 private:
@@ -106,8 +110,10 @@ private:
         publisher->publish(detection_msg);
     }
 
-    cv::imshow("Tennis Ball Detection", frame);
-    cv::waitKey(1);
+    if (show_window_) {
+      cv::imshow("Tennis Ball Detection", frame);
+      cv::waitKey(1);
+    }
   }
 
   std::vector<std::string> load_class_list()
@@ -131,6 +137,7 @@ private:
   bool detecting_HouseholdItems = false;
   rclcpp::Publisher<message_interfaces::msg::TennisBallDetection>::SharedPtr publisher;
   message_interfaces::msg::TennisBallDetection message;
+  bool show_window_ = false;
 };
 
 int main(int argc, char * argv[])
