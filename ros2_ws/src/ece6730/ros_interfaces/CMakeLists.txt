@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/AddTwoInts.srv"
   "srv/GetPose.srv"
   "srv/Centered.srv"
+  "srv/Forward.srv"
 DEPENDENCIES builtin_interfaces geometry_msgs 
 )
 

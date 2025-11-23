@@ -4,5 +4,7 @@ srv/AddTwoInts.idl
 srv/AddTwoInts.srv
 srv/Centered.idl
 srv/Centered.srv
+srv/Forward.idl
+srv/Forward.srv
 srv/GetPose.idl
 srv/GetPose.srv

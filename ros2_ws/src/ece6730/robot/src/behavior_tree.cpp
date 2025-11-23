@@ -9,137 +9,242 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "ros_interfaces/srv/centered.hpp"
-
+#include "ros_interfaces/srv/forward.hpp"
+#include "message_interfaces/msg/arduino_command.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 
 using namespace std::chrono_literals;
 
+using namespace BT;
+
 static const char* xml_text = R"(
 <root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-        <IsCentered name="IsCentered"/>
-    </BehaviorTree>
+  <BehaviorTree ID="MainTree">
+    <Sequence name="root_sequence">
+      <IsCentered name="IsCentered"/>
+      <IsForwarded name="IsForwarded"/>
+    </Sequence>
+  </BehaviorTree>
 </root>
  )";
 
-// Global ROS node used by the BT node to create a client and be spun in a background executor.
-static std::shared_ptr<rclcpp::Node> g_ros_node = nullptr;
-
-class IsCenteredNode : public BT::CoroActionNode
+// --- StatefulActionNode that calls the `centered` service
+class IsCentered : public StatefulActionNode
 {
 public:
-    IsCenteredNode(const std::string & name, const BT::NodeConfiguration & config)
-    : BT::CoroActionNode(name, config)
-    {
-        if (!g_ros_node) {
-            throw std::runtime_error("Global ROS node not initialized");
-        }
-        client_ = g_ros_node->create_client<ros_interfaces::srv::Centered>("centered");
-        // Don't block forever here — the tick loop will handle retries.
-        if (!client_->wait_for_service(1s)) {
-            RCLCPP_WARN(g_ros_node->get_logger(), "centered service not available yet");
-        }
+  IsCentered(const std::string &name, const NodeConfiguration &config)
+    : StatefulActionNode(name, config)
+  {
+    node_ = std::make_shared<rclcpp::Node>("is_centered_client");
+    client_ = node_->create_client<ros_interfaces::srv::Centered>("centered");
+    // create publisher here so it's always valid before onRunning() may publish
+    arduino_command_publisher_ = node_->create_publisher<message_interfaces::msg::ArduinoCommand>("arduino_command", 10);
+  }
+
+  static PortsList providedPorts()
+  {
+    return {};
+  }
+
+  NodeStatus onStart() override
+  {
+    // if service not available yet, stay RUNNING
+    if (!client_->wait_for_service(500ms)) {
+      RCLCPP_INFO(node_->get_logger(), "centered service not available yet");
+      return NodeStatus::RUNNING;
     }
 
-    static BT::PortsList providedPorts() { return {}; }
+    // send request and mark deadline
+    auto request = std::make_shared<ros_interfaces::srv::Centered::Request>();
+    future_ = client_->async_send_request(request);
+    deadline_ = std::chrono::steady_clock::now() + 1s;
+    return NodeStatus::RUNNING;
+  }
 
-    BT::NodeStatus tick() override
-    {
-        // Loop until the service returns X within [-0.25, 0.25] range or we are halted.
-        while (rclcpp::ok()) {
-            if (!client_->service_is_ready()) {
-                // Service is not ready yet; yield and let the tree tick again later.
-                setStatusRunningAndYield();
-                continue;
-            }
+  NodeStatus onRunning() override
+  {
+    rclcpp::spin_some(node_);
 
-            auto request = std::make_shared<ros_interfaces::srv::Centered::Request>();
-            auto future = client_->async_send_request(request);
-
-            // Poll the future in small intervals so we can yield cooperatively.
-            for (;;) {
-                // If the node was halted, exit with FAILURE.
-                if (isHalted()) {
-                    return BT::NodeStatus::FAILURE;
-                }
-
-                // Check if the response is ready.
-                if (future.wait_for(50ms) == std::future_status::ready) {
-                    auto res = future.get();
-                    float x = res->x; // service is float32
-                    RCLCPP_INFO(g_ros_node->get_logger(), "Centered service responded x=%.6f", static_cast<double>(x));
-                    
-                    // Check if x is within the acceptable range [-0.25, 0.25]
-                    if (std::abs(x) <= 0.25f && !std::isinf(x)) {
-                        RCLCPP_INFO(g_ros_node->get_logger(), "Tennis ball is centered! x=%.3f is within [-0.25, 0.25]", static_cast<double>(x));
-                        return BT::NodeStatus::SUCCESS;
-                    }
-                    
-                    // Not centered yet or invalid position — report RUNNING and yield
-                    if (std::isinf(x)) {
-                        RCLCPP_WARN(g_ros_node->get_logger(), "No tennis ball position available (x=inf)");
-                    } else {
-                        RCLCPP_DEBUG(g_ros_node->get_logger(), "Tennis ball not centered: x=%.3f (target: [-0.25, 0.25])", static_cast<double>(x));
-                    }
-                    setStatusRunningAndYield();
-                    break; // break polling loop to send another request on next iteration
-                }
-
-                // Not ready, yield so other BT activity or interrupts can run.
-                setStatusRunningAndYield();
-            }
-        }
-        return BT::NodeStatus::FAILURE;
+    if (!future_.valid()) {
+      // send a request if none pending
+      auto request = std::make_shared<ros_interfaces::srv::Centered::Request>();
+      future_ = client_->async_send_request(request);
+      deadline_ = std::chrono::steady_clock::now() + 1s;
+      return NodeStatus::RUNNING;
     }
 
-    void halt() override
-    {
-        // Let the base class record the halt and propagate.
-        CoroActionNode::halt();
+    // if response not ready yet
+    if (future_.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+      if (std::chrono::steady_clock::now() > deadline_) {
+        RCLCPP_INFO(node_->get_logger(), "centered service call timed out");
+        // reset future so we can retry on next run
+        future_ = rclcpp::Client<ros_interfaces::srv::Centered>::SharedFuture();
+        return NodeStatus::RUNNING;
+      }
+      return NodeStatus::RUNNING;
     }
+
+    // got response
+    auto response = future_.get();
+    future_ = rclcpp::Client<ros_interfaces::srv::Centered>::SharedFuture();
+    float x = response->x;
+    RCLCPP_INFO(node_->get_logger(), "centered service returned x=%.3f", x);
+
+    if ((x >= -0.025f) && (x <= 0.025f)) {
+      RCLCPP_INFO(node_->get_logger(), "No tennis ball detected, searching...");
+      arduino_command_msg_.arduino_command = "STOP\n";
+      arduino_command_publisher_->publish(arduino_command_msg_);
+      return NodeStatus::SUCCESS;
+    }
+    //check if x is equal to infinity
+    else if(std::isinf(x)){
+        RCLCPP_INFO(node_->get_logger(), "No tennis ball detected, searching...");
+        arduino_command_msg_.arduino_command = "STOP\n";
+        arduino_command_publisher_->publish(arduino_command_msg_);
+    }
+    else if(x < -.025f){
+        RCLCPP_INFO(node_->get_logger(), "Ball is to the right, adjusting...");
+        arduino_command_msg_.arduino_command = "RIGHT\n";
+        arduino_command_publisher_->publish(arduino_command_msg_);
+    }
+    else if(x > 0.025f){
+        RCLCPP_INFO(node_->get_logger(), "Ball is to the left, adjusting...");
+        arduino_command_msg_.arduino_command = "LEFT\n";
+        arduino_command_publisher_->publish(arduino_command_msg_);
+    }
+    return NodeStatus::RUNNING;
+  }
+
+  void onHalted() override
+  {
+    // clear pending future
+    future_ = rclcpp::Client<ros_interfaces::srv::Centered>::SharedFuture();
+  }
 
 private:
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::Client<ros_interfaces::srv::Centered>::SharedFuture future_;
     rclcpp::Client<ros_interfaces::srv::Centered>::SharedPtr client_;
+    rclcpp::Publisher<message_interfaces::msg::ArduinoCommand>::SharedPtr arduino_command_publisher_;
+    message_interfaces::msg::ArduinoCommand arduino_command_msg_;
+    std::chrono::steady_clock::time_point deadline_;
+};
+
+class IsForwarded : public StatefulActionNode
+{
+public:
+  IsForwarded(const std::string &name, const NodeConfiguration &config)
+    : StatefulActionNode(name, config)
+  {
+    node_ = std::make_shared<rclcpp::Node>("is_forwarded_client");
+    client_ = node_->create_client<ros_interfaces::srv::Forward>("forward");
+    // create publisher here so it's always valid before onRunning() may publish
+    arduino_command_publisher_ = node_->create_publisher<message_interfaces::msg::ArduinoCommand>("arduino_command", 10);
+  }
+
+  static PortsList providedPorts()
+  {
+    return {};
+  }
+
+  NodeStatus onStart() override
+  {
+    // if service not available yet, stay RUNNING
+    if (!client_->wait_for_service(500ms)) {
+      RCLCPP_INFO(node_->get_logger(), "centered service not available yet");
+      return NodeStatus::RUNNING;
+    }
+
+    // send request and mark deadline
+    auto request = std::make_shared<ros_interfaces::srv::Forward::Request>();
+    future_ = client_->async_send_request(request);
+    deadline_ = std::chrono::steady_clock::now() + 1s;
+    return NodeStatus::RUNNING;
+  }
+
+  NodeStatus onRunning() override
+  {
+    rclcpp::spin_some(node_);
+
+    if (!future_.valid()) {
+      // send a request if none pending
+      auto request = std::make_shared<ros_interfaces::srv::Forward::Request>();
+      future_ = client_->async_send_request(request);
+      deadline_ = std::chrono::steady_clock::now() + 1s;
+      return NodeStatus::RUNNING;
+    }
+
+    // if response not ready yet
+    if (future_.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+      if (std::chrono::steady_clock::now() > deadline_) {
+        RCLCPP_INFO(node_->get_logger(), "forward service call timed out");
+        // reset future so we can retry on next run
+        future_ = rclcpp::Client<ros_interfaces::srv::Forward>::SharedFuture();
+        return NodeStatus::RUNNING;
+      }
+      return NodeStatus::RUNNING;
+    }
+
+    // got response
+    auto response = future_.get();
+    future_ = rclcpp::Client<ros_interfaces::srv::Forward>::SharedFuture();
+    float z = response->z;
+    RCLCPP_INFO(node_->get_logger(), "forward service returned z=%.3f", z);
+
+    if (z <= .3f) {
+      arduino_command_msg_.arduino_command = "STOP\n";
+      arduino_command_publisher_->publish(arduino_command_msg_);
+      return NodeStatus::SUCCESS;
+    }
+    //check if x is equal to infinity
+    else if(std::isinf(z)){
+        RCLCPP_INFO(node_->get_logger(), "No tennis ball detected, searching...");
+        arduino_command_msg_.arduino_command = "STOP\n";
+        arduino_command_publisher_->publish(arduino_command_msg_);
+    }
+    else{
+        RCLCPP_INFO(node_->get_logger(), "Moving forward to tennis ball...");
+        arduino_command_msg_.arduino_command = "FORWARD\n";
+        arduino_command_publisher_->publish(arduino_command_msg_);
+    }
+    return NodeStatus::RUNNING;
+  }
+
+  void onHalted() override
+  {
+    // clear pending future
+    future_ = rclcpp::Client<ros_interfaces::srv::Forward>::SharedFuture();
+  }
+
+private:
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::Client<ros_interfaces::srv::Forward>::SharedFuture future_;
+    rclcpp::Client<ros_interfaces::srv::Forward>::SharedPtr client_;
+    rclcpp::Publisher<message_interfaces::msg::ArduinoCommand>::SharedPtr arduino_command_publisher_;
+    message_interfaces::msg::ArduinoCommand arduino_command_msg_;
+    std::chrono::steady_clock::time_point deadline_;
 };
 
 int main(int argc, char ** argv)
 {
-    rclcpp::init(argc, argv);
+  rclcpp::init(argc, argv);
 
-    // Create a ROS node that the BT nodes can use for clients.
-    g_ros_node = rclcpp::Node::make_shared("bt_center_client_node");
+  BT::BehaviorTreeFactory factory;
 
-    // Spin the ROS node in a background thread so service responses are processed.
-    rclcpp::executors::SingleThreadedExecutor exec;
-    exec.add_node(g_ros_node);
-    std::thread spin_thread([&exec]() {
-        exec.spin();
-    });
+  factory.registerNodeType<IsCentered>("IsCentered");
+  factory.registerNodeType<IsForwarded>("IsForwarded");
 
-    // Create factory and register the Coro action node.
-    BT::BehaviorTreeFactory factory;
-    factory.registerNodeType<IsCenteredNode>("IsCentered");
+  // create the tree and tick until centered
+  auto tree = factory.createTreeFromText(xml_text);
+  std::cout << "Starting behavior tree to position ball for catapult..." << std::endl;
+  NodeStatus status = NodeStatus::RUNNING;
+  while (status != NodeStatus::SUCCESS) {
+    status = tree.tickOnce();
+    if (status == NodeStatus::SUCCESS) break;
+    // small delay between attempts
+    std::this_thread::sleep_for(100ms);
+  }
 
-    // Create the tree from the small xml above.
-    auto tree = factory.createTreeFromText(xml_text);
-
-    // Tick the tree until SUCCESS or FAILURE.
-    while (rclcpp::ok()) {
-        auto status = tree.tickOnce();
-        if (status == BT::NodeStatus::SUCCESS) {
-            std::cout << "Behavior tree: stage succeeded (centered).\n";
-            break;
-        }
-        if (status == BT::NodeStatus::FAILURE) {
-            std::cout << "Behavior tree: stage failed.\n";
-            break;
-        }
-        // Sleep a short while before the next tick.
-        std::this_thread::sleep_for(100ms);
-    }
-
-    // Shutdown ROS and join spinner thread.
-    rclcpp::shutdown();
-    if (spin_thread.joinable()) spin_thread.join();
-    return 0;
+  std::cout << "Ball is positioned for catapult, exiting behavior tree." << std::endl;
+  rclcpp::shutdown();
 }

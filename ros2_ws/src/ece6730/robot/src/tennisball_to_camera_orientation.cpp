@@ -39,11 +39,11 @@ public:
             float offset_from_principal_x = center_x - principal_point_x;
             float offset_from_principal_y = center_y - principal_point_y;
             
-            RCLCPP_INFO(this->get_logger(), "Ball center: (%.1f, %.1f) px, Principal point: (%.1f, %.1f) px", 
-                       center_x, center_y, principal_point_x, principal_point_y);
-            RCLCPP_INFO(this->get_logger(), "Offset from principal point: (%.1f, %.1f) px", 
-                       offset_from_principal_x, offset_from_principal_y);
-            RCLCPP_INFO(this->get_logger(), "Tennis ball position - X: %.3f m, Y: %.3f m, Z: %.3f m", x, y, z);
+            //RCLCPP_INFO(this->get_logger(), "Ball center: (%.1f, %.1f) px, Principal point: (%.1f, %.1f) px", 
+                       //center_x, center_y, principal_point_x, principal_point_y);
+            //RCLCPP_INFO(this->get_logger(), "Offset from principal point: (%.1f, %.1f) px", 
+                       //offset_from_principal_x, offset_from_principal_y);
+            //RCLCPP_INFO(this->get_logger(), "Tennis ball position - X: %.3f m, Y: %.3f m, Z: %.3f m", x, y, z);
             
             // Calculate pixel size for diagnostic
             //float pixel_width = msg->right_x - msg->left_x;

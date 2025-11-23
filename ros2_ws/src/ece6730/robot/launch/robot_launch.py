@@ -45,6 +45,12 @@ def generate_launch_description():
         ),
         Node(
             package='robot',
+            executable='forward_to_tennisball',
+            name='forward_to_tennisball',
+            output='screen',
+        ),
+        Node(
+            package='robot',
             executable='behavior_tree',
             name='behavior_tree',
             output='screen',

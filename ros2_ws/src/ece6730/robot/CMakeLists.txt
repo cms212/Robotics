@@ -83,8 +83,11 @@ ament_target_dependencies(movement_to_tennisball_publisher rclcpp message_interf
 add_executable(center_to_tennisball src/center_to_tennisball.cpp)
 ament_target_dependencies(center_to_tennisball rclcpp message_interfaces ros_interfaces)
 
+add_executable(forward_to_tennisball src/forward_to_tennisball.cpp)
+ament_target_dependencies(forward_to_tennisball rclcpp message_interfaces ros_interfaces)
+
 add_executable(behavior_tree src/behavior_tree.cpp)
-ament_target_dependencies(behavior_tree rclcpp ros_interfaces behaviortree_cpp behaviortree_ros2)
+ament_target_dependencies(behavior_tree rclcpp ros_interfaces behaviortree_cpp behaviortree_ros2 message_interfaces)
 
 install(TARGETS
   #executive 
@@ -99,6 +102,7 @@ install(TARGETS
   tf_publisher
   movement_to_tennisball_publisher
   center_to_tennisball
+  forward_to_tennisball
   behavior_tree
   DESTINATION lib/${PROJECT_NAME})
 
