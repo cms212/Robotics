@@ -1,0 +1,53 @@
+SLOW ARM
+
+Succeeded to open the port.
+Succeeded to set the baudrate.
+Succeeded to read Model Number.
+Model Number: 1060
+Succeeded to read Model Information.
+Model Information Version: 0
+Succeeded to read Firmware Version.
+Firmware Version: 44
+Succeeded to read ID.
+ID: 1
+Succeeded to read Baud Rate.
+Baud Rate: 3
+Succeeded to read Return Delay Time.
+Return Delay Time: 0
+Succeeded to read Drive Mode.
+Drive Mode: 0
+Succeeded to read Operating Mode.
+Operating Mode: 3
+Succeeded to read Secondary Shadow ID.
+Secondary Shadow ID: 255
+Succeeded to read Protocol Type.
+Protocol Type: 2
+Succeeded to read Homing Offset.
+Homing Offset: 0
+Succeeded to read Moving Threshold.
+Moving Threshold: 10
+Succeeded to read Temperature Limit.
+Temperature Limit: 72
+Succeeded to read Max Voltage Limit.
+Max Voltage Limit: 140
+Succeeded to read Min Velocity Limit.
+Min Velocity Limit: 60
+Succeeded to read PWM Limit.
+PWM Limit: 885
+Succeeded to read Max Velocity Limit.
+Max Velocity Limit: 131
+Succeeded to read Max Position Limit.
+Max Position Limit: 4095
+Succeeded to read Min Position Limit.
+Min Position Limit: 0
+Succeeded to read Startup Configuration.
+Startup Configuration: 0
+Succeeded to read Shutdown.
+Shutdown: 52
+Port open. Sleeping 1s then closing.
+
+
+FAST ARM
+
+
+

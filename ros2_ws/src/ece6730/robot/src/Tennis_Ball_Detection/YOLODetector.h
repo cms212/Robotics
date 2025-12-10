@@ -12,7 +12,7 @@ const float INPUT_WIDTH = 640.0;
 const float INPUT_HEIGHT = 640.0;
 const float SCORE_THRESHOLD = 0.2;
 const float NMS_THRESHOLD = 0.4;
-const float CONFIDENCE_THRESHOLD = 0.65;
+const float CONFIDENCE_THRESHOLD = 0.60;
 
 struct Detection
 {
@@ -36,7 +36,6 @@ public:
           session(env, model_path.c_str(), Ort::SessionOptions{}),
           memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault)) {
         
-        // Get input info
         auto input_count = session.GetInputCount();
         for (size_t i = 0; i < input_count; i++) {
             auto input_name = session.GetInputNameAllocated(i, Ort::AllocatorWithDefaultOptions{});
@@ -46,19 +45,11 @@ public:
             input_shape = input_shapes;
         }
         
-        // Get output info
         auto output_count = session.GetOutputCount();
         for (size_t i = 0; i < output_count; i++) {
             auto output_name = session.GetOutputNameAllocated(i, Ort::AllocatorWithDefaultOptions{});
             output_names.push_back(output_name.release());
         }
-        
-        //std::cout << "Model loaded successfully" << std::endl;
-        //std::cout << "Input shape: ";
-        //for (auto dim : input_shape) {
-            //std::cout << dim << " ";
-        //}
-        //std::cout << std::endl;
     }
 
     cv::Mat format_image(const cv::Mat &source) {
@@ -77,47 +68,38 @@ public:
         cv::Mat blob;
         input_image.convertTo(blob, CV_32F, 1.0/255.0);
         
-        // Converting to CHW format
         std::vector<cv::Mat> channels(3);
         cv::split(blob, channels);
         
-        // Flattening and combining channels
         std::vector<float> input_tensor_values;
         for (auto& channel : channels) {
             std::vector<float> channel_data = channel.reshape(1, 1);
             input_tensor_values.insert(input_tensor_values.end(), channel_data.begin(), channel_data.end());
         }
         
-        // Creating input tensor
         std::vector<int64_t> input_tensor_shape = {1, 3, (int64_t)INPUT_HEIGHT, (int64_t)INPUT_WIDTH};
         auto input_tensor = Ort::Value::CreateTensor<float>(
             memory_info, input_tensor_values.data(), input_tensor_values.size(),
             input_tensor_shape.data(), input_tensor_shape.size()
         );
         
-        // Running inference
         auto output_tensors = session.Run(Ort::RunOptions{nullptr}, 
                                          input_names.data(), &input_tensor, 1,
                                          output_names.data(), output_names.size());
         
-        // Processing output
         float* output_data = output_tensors[0].GetTensorMutableData<float>();
         auto output_shape = output_tensors[0].GetTensorTypeAndShapeInfo().GetShape();
         
-        // Parsing detections
         std::vector<Detection> detections;
         
-        // YOLOv8n output format: [batch, features, detections] or [batch, detections, features]
         int num_detections, num_features;
         bool is_transposed = false;
         
         if (output_shape.size() == 3) {
             if (output_shape[1] > output_shape[2] && output_shape[2] >= 4) {
-                // [batch, detections, features]
                 num_detections = output_shape[1];
                 num_features = output_shape[2];
             } else {
-                // [batch, features, detections] - transposed
                 num_detections = output_shape[2];
                 num_features = output_shape[1];
                 is_transposed = true;
@@ -126,15 +108,12 @@ public:
             return detections;
         }
         
-        // Calculating the correct scaling factors and accounting for padding
         int original_width = image.cols;
         int original_height = image.rows;
         int max_dim = std::max(original_width, original_height);
         
-        // padded to max_dim x max_dim, resized to 640x640
         float scale = (float)max_dim / INPUT_WIDTH;
         
-        // Calculating offsets for centering
         float x_offset = 0;
         float y_offset = 0;
         if (original_width < max_dim) {
@@ -163,7 +142,6 @@ public:
                 h = output_data[i * num_features + 3];
             }
             
-            // Finding max class confidence
             float max_confidence = 0;
             int max_class_id = 0;
             for (int j = 4; j < num_features; ++j) {
@@ -181,20 +159,16 @@ public:
             }
             
             if (max_confidence >= CONFIDENCE_THRESHOLD) {
-                // Converting coordinates from 640x640 model output to original image
-                // First scale back to the padded square image
                 float center_x = x * scale;
                 float center_y = y * scale;
                 float width = w * scale;
                 float height = h * scale;
                 
-                // Converting from center coordinates to top-left coordinates
                 int left = int(center_x - width / 2.0);
                 int top = int(center_y - height / 2.0);
                 int box_width = int(width);
                 int box_height = int(height);
                 
-                // Clamp to original image bounds
                 left = std::max(0, std::min(left, original_width - 1));
                 top = std::max(0, std::min(top, original_height - 1));
                 box_width = std::min(box_width, original_width - left);
@@ -208,7 +182,6 @@ public:
             }
         }
         
-        // Applying NMS
         std::vector<int> nms_result;
         cv::dnn::NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, nms_result);
         

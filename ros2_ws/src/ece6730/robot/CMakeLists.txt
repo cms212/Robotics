@@ -86,8 +86,11 @@ ament_target_dependencies(center_to_tennisball rclcpp message_interfaces ros_int
 add_executable(forward_to_tennisball src/forward_to_tennisball.cpp)
 ament_target_dependencies(forward_to_tennisball rclcpp message_interfaces ros_interfaces)
 
-add_executable(behavior_tree src/behavior_tree.cpp)
-ament_target_dependencies(behavior_tree rclcpp ros_interfaces behaviortree_cpp behaviortree_ros2 message_interfaces)
+add_executable(behavior_tree src/behavior_tree.cpp )
+ament_target_dependencies(behavior_tree rclcpp ros_interfaces behaviortree_cpp behaviortree_ros2 message_interfaces dynamixel_sdk dynamixel_sdk_custom_interfaces)
+
+add_executable(arm_service src/ArmService.cpp)
+ament_target_dependencies(arm_service rclcpp ros_interfaces  dynamixel_sdk dynamixel_sdk_custom_interfaces)
 
 install(TARGETS
   #executive 
@@ -104,6 +107,7 @@ install(TARGETS
   center_to_tennisball
   forward_to_tennisball
   behavior_tree
+  arm_service
   DESTINATION lib/${PROJECT_NAME})
 
 install(PROGRAMS

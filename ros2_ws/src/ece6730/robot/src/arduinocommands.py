@@ -17,11 +17,6 @@ class ArduinoNode(Node):
         global g_ser
         global a_node
         a_node = self
-        # ensure INFO-level logs are emitted
-        try:
-            self.get_logger().set_level(LoggingSeverity.INFO)
-        except Exception:
-            pass
         try:
             g_ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
             self.get_logger().info('Serial port /dev/ttyACM0 opened successfully.')
@@ -39,7 +34,6 @@ class ArduinoNode(Node):
         global g_ser
         global current_command
         g_ser.write(msg.arduino_command.encode())
-        self.get_logger().info(f"Sent command: {msg.arduino_command.strip()}")
 
 
 def main(args=None):

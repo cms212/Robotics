@@ -2,6 +2,10 @@ action/Fibonacci.action
 action/Fibonacci.idl
 srv/AddTwoInts.idl
 srv/AddTwoInts.srv
+srv/ArmPosition.idl
+srv/ArmPosition.srv
+srv/ArmService.idl
+srv/ArmService.srv
 srv/Centered.idl
 srv/Centered.srv
 srv/Forward.idl

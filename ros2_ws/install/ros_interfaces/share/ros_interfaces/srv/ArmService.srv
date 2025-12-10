@@ -1,0 +1,4 @@
+uint32 joint
+uint32 joint_pos
+---
+int32 result

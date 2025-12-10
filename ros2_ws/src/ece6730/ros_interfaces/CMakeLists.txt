@@ -20,6 +20,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetPose.srv"
   "srv/Centered.srv"
   "srv/Forward.srv"
+  "srv/ArmService.srv"
+  "srv/ArmPosition.srv"
 DEPENDENCIES builtin_interfaces geometry_msgs 
 )
 

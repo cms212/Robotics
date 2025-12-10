@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from ros_interfaces/srv/ArmService.srv
+// generated code does not contain a copyright notice
+
+
+module ros_interfaces {
+  module srv {
+    struct ArmService_Request {
+      uint32 joint;
+
+      uint32 joint_pos;
+    };
+    struct ArmService_Response {
+      int32 result;
+    };
+  };
+};
